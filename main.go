@@ -175,6 +175,7 @@ func realMain() error {
 		return err
 	}
 
+	// analysis node (already set tags)
 	rewrittenNode, errs := cfg.rewrite(node, start, end)
 	if errs != nil {
 		if _, ok := errs.(*rewriteErrors); !ok {
@@ -182,6 +183,7 @@ func realMain() error {
 		}
 	}
 
+	// real format
 	out, err := cfg.format(rewrittenNode, errs)
 	if err != nil {
 		return err
@@ -459,6 +461,7 @@ func collectStructs(node ast.Node) map[token.Pos]*structType {
 func (c *config) format(file ast.Node, rwErrs error) (string, error) {
 	switch c.output {
 	case "source":
+		// default is source
 		var buf bytes.Buffer
 		err := format.Node(&buf, c.fset, file)
 		if err != nil {
@@ -507,11 +510,12 @@ func (c *config) format(file ast.Node, rwErrs error) (string, error) {
 				continue
 			}
 
+			// //line c:\code\gopath\src\ekt.com\call\tmptest\embed-struct-json\main.go:1 3
 			splitted := strings.Split(txt, ":")
-			if len(splitted) != 2 {
+			if len(splitted) <= 1 {
 				return "", fmt.Errorf("invalid line directive found: %q", txt)
 			}
-			lineNr, err := strconv.Atoi(splitted[1])
+			lineNr, err := strconv.Atoi(splitted[len(splitted)-1])
 			if err != nil {
 				return "", err
 			}
@@ -658,6 +662,8 @@ func (c *config) rewrite(node ast.Node, start, end int) (ast.Node, error) {
 				}
 
 				fieldName = ident.Name
+				// don't set anonymous
+				continue
 			}
 
 			res, err := c.process(fieldName, f.Tag.Value)
