@@ -15,6 +15,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -468,14 +469,17 @@ func (c *config) format(file ast.Node, rwErrs error) (string, error) {
 			return "", err
 		}
 
+		var bufBs = buf.Bytes()
+		if runtime.GOOS == "windows" {
+			bufBs = bytes.Replace(bufBs, []byte{'\n'}, []byte{'\r', '\n'}, -1)
+		}
 		if c.write {
-			err = ioutil.WriteFile(c.file, buf.Bytes(), 0)
+			err = ioutil.WriteFile(c.file, bufBs, 0)
 			if err != nil {
 				return "", err
 			}
 		}
-
-		return buf.String(), nil
+		return string(bufBs), nil
 	case "json":
 		// NOTE(arslan): print first the whole file and then cut out our
 		// selection. The reason we don't directly print the struct is that the

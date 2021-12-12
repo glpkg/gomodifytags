@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -368,9 +369,13 @@ func TestRewrite(t *testing.T) {
 			}
 
 			// compare
+			fmt.Println(len(got), len(want), ts.file)
 			if !bytes.Equal(got, want) {
 				t.Errorf("case %s\ngot:\n====\n\n%s\nwant:\n=====\n\n%s\nfrom:\n=====\n\n%s\n",
 					ts.file, got, want, from)
+				ioutil.WriteFile("C:\\code\\gopath\\src\\github.com\\shesuyo\\gomodifytags\\a", got, 0655)
+				ioutil.WriteFile("C:\\code\\gopath\\src\\github.com\\shesuyo\\gomodifytags\\b", want, 0655)
+				os.Exit(1)
 			}
 		})
 	}
